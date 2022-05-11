@@ -19,9 +19,17 @@ func main() {
 		log.Println("Initial service middleware")
 		context.Next()
 	})
+	service.Use(func(context *gin.Context) {
+		log.Println("First Service middleware")
+		context.Next()
+	})
 	service.Route("GET", "/", controllers.ServiceIndex())
 
-	//user := service.Group("/user")
+	user := service.Group("/user")
+	user.Use(func(context *gin.Context) {
+		log.Println("Generic User service middleware")
+		context.Next()
+	})
 	//
 	//user.Use(func(context *gin.Context) {
 	//	log.Println("User Service Middleware 2", context.MustGet("routeConfig"))
@@ -32,7 +40,8 @@ func main() {
 	//	context.Next()
 	//})
 	//
-	//user.Route("GET", "/", user.GetUserLIst())
+	user.Route("GET", "/", controllers.ServiceIndex())
+	user.Route("GET", "/detail", controllers.ServiceIndex())
 	//user.Route("GET", "/first", user.GetUserDetail())
 
 	err := service.Run(":5002")

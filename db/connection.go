@@ -8,7 +8,7 @@ import (
 
 var DB *gorm.DB
 
-const dsn = "postgresql://gin_service:test123@localhost:5432/gin_service"
+const dsn = "postgresql://gin_service:test123@localhost:5433/gin_service"
 
 func Init() *gorm.DB {
 
