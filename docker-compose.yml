@@ -12,7 +12,7 @@ services:
     networks:
       - backend
     volumes:
-      - db-data:/var/lib/data
+      - db-data:/var/utils/data
       - ./db/extensions:/docker-entrypoint-initdb.d
     ports:
       - "127.0.0.1:5433:${DATABASE_PORT}"

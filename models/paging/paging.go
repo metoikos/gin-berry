@@ -2,7 +2,7 @@
 package paging
 
 import (
-	"gin-berry/lib"
+	"gin-berry/utils"
 	"math"
 )
 
@@ -43,7 +43,7 @@ func New(currentPage int64, pageSize int64, totalItems int64) Paging {
 		CurrentPage:  page,
 		NextPage:     nextPage,
 		PreviousPage: previousPage,
-		Pages:        lib.MakeRange(1, int(totalPages)),
+		Pages:        utils.MakeRange(1, int(totalPages)),
 		Count:        totalItems,
 		Offset:       offset,
 		LastPage:     totalPages,
