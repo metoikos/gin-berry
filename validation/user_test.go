@@ -1,6 +1,7 @@
 package validation
 
 import (
+	//"github.com/fatih/structtag"
 	"github.com/go-playground/validator/v10"
 	"testing"
 )
@@ -21,10 +22,12 @@ func TestUser(t *testing.T) {
 
 func TestUserFail(t *testing.T) {
 	user := User{
-		Name:  "John Doe",
-		Email: "test@test.com",
+		Name:     "John Doe",
+		Email:    "test@test.com",
+		Password: "asasd",
 	}
 	err := validate.Struct(user)
+
 	if err == nil {
 		t.Fatalf("Invalid validation. %v should fail on password validation", user)
 	}
