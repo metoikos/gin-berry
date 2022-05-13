@@ -4,10 +4,7 @@ import (
 	"errors"
 	"gin-berry/utils"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
-	"reflect"
-	"runtime"
 )
 
 // Service defines a high level of application service with gin framework embedded.
@@ -45,9 +42,7 @@ func New(middleware ...gin.HandlerFunc) *Service {
 	if middleware != nil {
 		app.Use(middleware...)
 	}
-	for _, h := range app.Handlers {
-		log.Println(runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name())
-	}
+
 	return &Service{RouterGroup: app.Group("/"), Engine: app}
 }
 
