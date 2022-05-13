@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"gin-berry/utils"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -56,11 +57,18 @@ func (s *Service) handleRouterOptions(config interface{}, opts ServiceRouterOpti
 		c.Set("routeConfig", config)
 		if opts.QueryString != nil {
 			if err := c.ShouldBindQuery(opts.QueryString); err != nil {
-				c.JSON(http.StatusBadRequest, ErrorResponse(err))
-				c.Abort()
+				var errorResponse any
+				apiErrors, _ := utils.BuildAPiError(opts.QueryString, err)
+				if apiErrors != nil {
+					errorResponse = apiErrors
+				} else {
+					errorResponse = err.Error()
+				}
+
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errorResponse})
 				return
 			}
-			c.Set("_queryString", opts.QueryString)
+			c.Set("queryString", opts.QueryString)
 		}
 		c.Next()
 	}
