@@ -1,4 +1,4 @@
-package core
+package berry
 
 import (
 	"errors"
@@ -14,26 +14,26 @@ type Service struct {
 	HandlersChain []gin.HandlerFunc
 }
 
-// ServiceRouterOptions defines payload config.
-type ServiceRouterOptions struct {
+// RouterOptions defines payload config.
+type RouterOptions struct {
 	QueryString interface{}
 	Params      interface{}
 	Body        interface{}
 }
 
-// ServiceRouterConfig defines the routing handler and the various configuration that will work
+// RouterConfig defines the routing handler and the various configuration that will work
 // within the route handler.
-type ServiceRouterConfig struct {
+type RouterConfig struct {
 	Middlewares []gin.HandlerFunc
 	Handler     gin.HandlerFunc
-	Options     ServiceRouterOptions
+	Options     RouterOptions
 	Config      interface{}
 }
 
 // ErrorResponse is a generic error response utility fn.
-func ErrorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
-}
+//func ErrorResponse(err error) gin.H {
+//	return gin.H{"error": err.Error()}
+//}
 
 // New creates a new Service instance.
 func New(middleware ...gin.HandlerFunc) *Service {
@@ -46,8 +46,8 @@ func New(middleware ...gin.HandlerFunc) *Service {
 	return &Service{RouterGroup: app.Group("/"), Engine: app}
 }
 
-// handleRouterOptions handles the payload validation given in the `ServiceRouterOptions` object.
-func (s *Service) handleRouterOptions(config interface{}, opts ServiceRouterOptions) func(ctx *gin.Context) {
+// handleRouterOptions handles the payload validation given in the `RouterOptions` object.
+func (s *Service) handleRouterOptions(config interface{}, opts RouterOptions) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
 		c.Set("routeConfig", config)
 		if opts.QueryString != nil {
@@ -72,14 +72,14 @@ func (s *Service) handleRouterOptions(config interface{}, opts ServiceRouterOpti
 type HttpMethodType string
 
 // Route registers a new route handler to the service.
-func (s *Service) Route(method HttpMethodType, path string, conf ServiceRouterConfig) {
+func (s *Service) Route(method HttpMethodType, path string, conf RouterConfig) {
 	// initial payload validation
 	preHandler := s.handleRouterOptions(conf.Config, conf.Options)
 	// first execute and mutate the context
 	handlers := []gin.HandlerFunc{preHandler}
 	// initial middlewares from higher group call
 	handlers = append(handlers, s.HandlersChain...)
-	// middlewares registered to this route with the `ServiceRouterConfig`
+	// middlewares registered to this route with the `RouterConfig`
 	handlers = append(handlers, conf.Middlewares...)
 	// the real request handler
 	handlers = append(handlers, conf.Handler)

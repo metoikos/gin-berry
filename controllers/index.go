@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"gin-berry/core"
+	"gin-berry/berry"
 	"gin-berry/models"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -16,8 +16,8 @@ type QueryParams struct {
 	Username string `validate:"required" json:"username" msg_required:"User name is required!"`
 }
 
-func ServiceIndex() core.ServiceRouterConfig {
-	return core.ServiceRouterConfig{
+func ServiceIndex() berry.RouterConfig {
+	return berry.RouterConfig{
 		// these will be executed before the route handler
 		// but after the group middleware
 		Middlewares: []gin.HandlerFunc{func(ctx *gin.Context) {
@@ -32,7 +32,7 @@ func ServiceIndex() core.ServiceRouterConfig {
 				"paging":  paging,
 			})
 		},
-		Options: core.ServiceRouterOptions{
+		Options: berry.RouterOptions{
 			// we will require that a `Username` value must exist in the request query string.
 			QueryString: QueryParams{},
 		},

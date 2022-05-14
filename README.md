@@ -25,18 +25,18 @@ To add some spice, we also integrated [gorm](https://gorm.io/) as a database wra
 
 ### Usage
 
-We are wrapping the `gin.Engine` and `gin.RouterGroup` and creating a `core.Service`.
+We are wrapping the `gin.Engine` and `gin.RouterGroup` and creating a `berry.Service`.
 
 ```go
 // setup service
-service := core.New()
+service := berry.New()
 ```
 
 Or with a global middleware:
 
 ```go
 // setup service
-service := core.New(func(context *gin.Context) {
+service := berry.New(func(context *gin.Context) {
     log.Println("Initial service middleware")
     context.Next()
 })
@@ -44,11 +44,11 @@ service := core.New(func(context *gin.Context) {
 
 The `Service` wraps `gin.Default()` so `Logger` and `Recovery` middlewares are automatically added.
 
-You can also add as many middlewares as you wish to the `core.Service`
+You can also add as many middlewares as you wish to the `berry.Service`
 
 ```go
 // setup service
-service := core.New(func(context *gin.Context) {
+service := berry.New(func(context *gin.Context) {
     log.Println("Initial service middleware")
     context.Next()
 }, CustomMiddleware(), AnotherMiddleware())
@@ -60,19 +60,19 @@ Now you can handle a request with the `Route` method.
 service.Route("GET", "/", controllers.ServiceIndex())
 ```
 
-`controllers.ServiceIndex()` is an instance of `core.ServiceRouterConfig`.
+`controllers.ServiceIndex()` is an instance of `berry.RouterConfig`.
 
 From the controller you'll have the following for minimal handler:
 
 ```go
 import (
-	"gin-berry/core"
+	"gin-berry/berry"
 	"gin-berry/models"
 	"github.com/gin-gonic/gin"
 )
 
-func ServiceIndex() core.ServiceRouterConfig {
-	return core.ServiceRouterConfig{
+func ServiceIndex() berry.RouterConfig {
+	return berry.RouterConfig{
 		Handler: func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{
 				"hello":  "world",
@@ -95,8 +95,8 @@ type QueryParams struct {
     Username string `validate:"required" json:"username" msg_required:"User name is required!"`
 }
 
-func ServiceIndex() core.ServiceRouterConfig {
-  return core.ServiceRouterConfig{
+func ServiceIndex() berry.RouterConfig {
+  return berry.RouterConfig{
     // these will be executed before the route handler
     // but after the group middleware
     Middlewares: []gin.HandlerFunc{func(ctx *gin.Context) {
@@ -111,7 +111,7 @@ func ServiceIndex() core.ServiceRouterConfig {
         "paging":  paging,
       })
     },
-    Options: core.ServiceRouterOptions{
+    Options: berry.RouterOptions{
         // we will require that a `Username` value must exist in the request query string.
         QueryString: QueryParams{},
     },
@@ -124,10 +124,10 @@ func ServiceIndex() core.ServiceRouterConfig {
 
 ```
 
-`core.ServiceRouterOptions` can take the following to validate the incoming request.
+`berry.RouterOptions` can take the following to validate the incoming request.
 ```go
 
-type ServiceRouterOptions struct {
+type RouterOptions struct {
 	QueryString interface{}
 	Params      interface{}
 	Body        interface{}
@@ -151,12 +151,12 @@ performance impact. Especially the custom error message handling part is not wel
 <table style="border: 0">
 <tr style="text-align: center; border: 0">
 <td style="text-align: center; border: 0">
-<img src="https://avatars.githubusercontent.com/u/107426?s=32&v=4" />
+<img alt="Yılmaz Uğurlu" src="https://avatars.githubusercontent.com/u/107426?s=32&v=4" />
 <br />
 <a href="https://github.com/metoikos" target="_blank">metoikos</a>
 </td>
 <td style="text-align: center; border: 0">
-<img src="https://avatars.githubusercontent.com/u/34680852?s=32&v=4" />
+<img alt="Kaya Kapağan" src="https://avatars.githubusercontent.com/u/34680852?s=32&v=4" />
 <br />
 <a href="https://github.com/kayakapagan" target="_blank">kayakapagan</a>
 </td>

@@ -1,8 +1,8 @@
 package main
 
 import (
+	"gin-berry/berry"
 	"gin-berry/controllers"
-	"gin-berry/core"
 	"gin-berry/db"
 	"gin-berry/models"
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,7 @@ func main() {
 	models.Migrate(conn)
 
 	// setup service
-	service := core.New(func(context *gin.Context) {
+	service := berry.New(func(context *gin.Context) {
 		log.Println("Initial service middleware")
 		context.Next()
 	})
