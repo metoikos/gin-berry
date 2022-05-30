@@ -13,7 +13,8 @@ type RouteConfig struct {
 }
 
 type QueryParams struct {
-	Username string `validate:"required" json:"username" msg_required:"User name is required!"`
+	Page  uint8 `form:"page" json:"page"  binding:"number,min=1" msg_min:"Invalid page!" msg_number:"Page must be a number!"`
+	Limit uint8 `form:"limit" json:"limit" binding:"number,oneof=10 25 50" msg_number:"Limit must be a number!" msg_oneof:"Invalid limit value!"`
 }
 
 func ServiceIndex() berry.RouterConfig {
@@ -25,16 +26,20 @@ func ServiceIndex() berry.RouterConfig {
 		}},
 		// this handles the actual route
 		Handler: func(ctx *gin.Context) {
+			log.Println("Route handler: query", ctx.MustGet("query"))
 			var user models.User
-			state, paging := user.GetUsers(1, 20)
+			users, paging := user.GetUsers(1, 20)
 			ctx.JSON(200, gin.H{
-				"results": state,
-				"paging":  paging,
+				"users":  users,
+				"paging": paging,
 			})
 		},
-		Options: berry.RouterOptions{
+		Validation: berry.RouterOptions{
 			// we will require that a `Username` value must exist in the request query string.
-			QueryString: QueryParams{},
+			QueryString: &QueryParams{
+				Page:  1, // default values
+				Limit: 10,
+			},
 		},
 		Config: RouteConfig{
 			ForceAuth:   true,

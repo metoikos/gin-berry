@@ -1,4 +1,4 @@
-package utils
+package berry
 
 import (
 	"bytes"
@@ -23,12 +23,15 @@ func BuildAPiError(st interface{}, baseError error) ([]ApiError, error) {
 	var ve validator.ValidationErrors
 	if errors.As(baseError, &ve) {
 		out := make([]ApiError, len(ve))
-
+		// convert st pointer to a struct
 		// get the struct type
 		stType := reflect.TypeOf(st)
+		el := stType.Elem()
+
 		for i, err := range ve {
 			// get the tags from the base struct
-			field, _ := stType.FieldByName(err.Field())
+			field, _ := el.FieldByName(err.Field())
+			//log.Println("field =>", err.Tag())
 
 			// We expect the error messages to be in the "msg_TAG_NAME" tag.
 			// Combine the failed validation field and add "_required" to reach to the validation message.
@@ -37,6 +40,8 @@ func BuildAPiError(st interface{}, baseError error) ([]ApiError, error) {
 			jsonTag := field.Tag.Get(tagName)
 			// get the initial error message
 			errorMessage := err.Error()
+			//log.Println("jsonTag=>", jsonTag)
+			//log.Println("=======")
 			// if an error message is exist
 			if len(jsonTag) > 0 {
 				//errorMessage = jsonTag.Name
@@ -54,7 +59,7 @@ func BuildAPiError(st interface{}, baseError error) ([]ApiError, error) {
 					errorMessage = buf.String()
 				}
 			}
-			// put error message to
+			// put error message to the output slice
 			out[i] = ApiError{err.Field(), errorMessage}
 		}
 

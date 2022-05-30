@@ -2,9 +2,10 @@ package berry
 
 import (
 	"errors"
-	"gin-berry/utils"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
+	"reflect"
 )
 
 // Service defines a high level of application service with gin framework embedded.
@@ -14,6 +15,10 @@ type Service struct {
 	HandlersChain []gin.HandlerFunc
 }
 
+type ValidationSchema interface {
+	QuerySchema() interface{}
+}
+
 // RouterOptions defines payload config.
 type RouterOptions struct {
 	QueryString interface{}
@@ -21,13 +26,39 @@ type RouterOptions struct {
 	Body        interface{}
 }
 
+func (r RouterOptions) QuerySchema() interface{} {
+	return r.QueryString
+}
+
+//
+//func (r *RouterOptions) Value(section, name string) any {
+//	s := reflect.Indirect(reflect.ValueOf(r.Schema(section)))
+//	return s.FieldByName(name)
+//}
+
 // RouterConfig defines the routing handler and the various configuration that will work
 // within the route handler.
 type RouterConfig struct {
 	Middlewares []gin.HandlerFunc
 	Handler     gin.HandlerFunc
-	Options     RouterOptions
+	Validation  RouterOptions
 	Config      interface{}
+}
+
+func (r *RouterConfig) GetConfigValue(name string) any {
+	config := reflect.ValueOf(r.Config)
+	if config.Kind() == reflect.Ptr {
+		config = config.Elem()
+
+	} else {
+		config = reflect.Indirect(config)
+	}
+
+	return config.FieldByName(name)
+}
+
+type Route interface {
+	GetConfigValue(name string) any
 }
 
 // ErrorResponse is a generic error response utility fn.
@@ -49,11 +80,23 @@ func New(middleware ...gin.HandlerFunc) *Service {
 // handleRouterOptions handles the payload validation given in the `RouterOptions` object.
 func (s *Service) handleRouterOptions(config interface{}, opts RouterOptions) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
+
 		c.Set("routeConfig", config)
-		if opts.QueryString != nil {
-			if err := c.ShouldBindQuery(opts.QueryString); err != nil {
+		qs := opts.QuerySchema()
+
+		if qs != nil {
+			//stType := reflect.TypeOf(qs)
+			//stType.Elem()
+			//el := stType.Elem()
+			//el := reflect.New(stType)
+			// copy data from the qs to the el
+			//el.Elem().Set(reflect.ValueOf(qs))
+			//x := reflect.Copy(el, reflect.ValueOf(qs))
+			//el.Elem().FieldByName("Query").Set(reflect.ValueOf(c.Query(el.Elem().FieldByName("Query").String())))
+			//log.Println(":el", el)
+			if err := c.ShouldBindQuery(qs); err != nil {
 				var errorResponse any
-				apiErrors, _ := utils.BuildAPiError(opts.QueryString, err)
+				apiErrors, _ := BuildAPiError(qs, err)
 				if apiErrors != nil {
 					errorResponse = apiErrors
 				} else {
@@ -63,7 +106,9 @@ func (s *Service) handleRouterOptions(config interface{}, opts RouterOptions) fu
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errorResponse})
 				return
 			}
-			c.Set("queryString", opts.QueryString)
+
+			log.Println("qs", qs)
+			c.Set("query", qs)
 		}
 		c.Next()
 	}
@@ -74,7 +119,7 @@ type HttpMethodType string
 // Route registers a new route handler to the service.
 func (s *Service) Route(method HttpMethodType, path string, conf RouterConfig) {
 	// initial payload validation
-	preHandler := s.handleRouterOptions(conf.Config, conf.Options)
+	preHandler := s.handleRouterOptions(conf.Config, conf.Validation)
 	// first execute and mutate the context
 	handlers := []gin.HandlerFunc{preHandler}
 	// initial middlewares from higher group call
