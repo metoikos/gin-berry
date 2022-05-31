@@ -2,10 +2,11 @@ package berry
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"reflect"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Service defines a high level of application service with gin framework embedded.
@@ -41,7 +42,7 @@ func (r RouterOptions) QuerySchema() interface{} {
 type RouterConfig struct {
 	Middlewares []gin.HandlerFunc
 	Handler     gin.HandlerFunc
-	Validation  RouterOptions
+	Validation  func() RouterOptions
 	Config      interface{}
 }
 
@@ -78,11 +79,11 @@ func New(middleware ...gin.HandlerFunc) *Service {
 }
 
 // handleRouterOptions handles the payload validation given in the `RouterOptions` object.
-func (s *Service) handleRouterOptions(config interface{}, opts RouterOptions) func(ctx *gin.Context) {
+func (s *Service) handleRouterOptions(config interface{}, getOpts func() RouterOptions) func(ctx *gin.Context) {
 	return func(c *gin.Context) {
 
 		c.Set("routeConfig", config)
-		qs := opts.QuerySchema()
+		qs := getOpts().QueryString
 
 		if qs != nil {
 			//stType := reflect.TypeOf(qs)

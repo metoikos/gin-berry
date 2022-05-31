@@ -3,8 +3,9 @@ package controllers
 import (
 	"gin-berry/berry"
 	"gin-berry/models"
-	"github.com/gin-gonic/gin"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RouteConfig struct {
@@ -34,12 +35,13 @@ func ServiceIndex() berry.RouterConfig {
 				"paging": paging,
 			})
 		},
-		Validation: berry.RouterOptions{
-			// we will require that a `Username` value must exist in the request query string.
-			QueryString: &QueryParams{
-				Page:  1, // default values
-				Limit: 10,
-			},
+		Validation: func() berry.RouterOptions {
+			return berry.RouterOptions{
+				QueryString: &QueryParams{
+					Page:  1, // default values
+					Limit: 10,
+				},
+			}
 		},
 		Config: RouteConfig{
 			ForceAuth:   true,
